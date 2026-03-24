@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>isokoLink - Login</title>
+<link rel="icon" type="image/png" href="../images/logo/icon.png">
+<link rel="stylesheet" href="login.css">
+</head>
+
+<body>
+
+<div class="hero-bg" id="bg-0"></div>
+<div class="hero-bg" id="bg-1"></div>
+<div class="hero-bg" id="bg-2"></div>
+<div class="hero-bg" id="bg-3"></div>
+<div class="hero-bg" id="bg-4"></div>
+<div class="hero-bg" id="bg-5"></div>
+<div class="hero-overlay"></div>
+
+<div class="container">
+
+    <div class="card">
+        <img src="../images/logo/icon.png" alt="isokoLink" class="brand-logo">
+        <p class="subtitle">Connect directly. Trade smarter.</p>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="email" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" required>
+            </div>
+
+            <p id="error" class="error"></p>
+
+            <button type="submit">Login</button>
+
+        </form>
+
+        <p class="link">
+            Don't have an account?
+            <a href="../signup/signup.html">Sign up</a>
+        </p>
+    </div>
+
+</div>
+
+<script src="../js/config.js"></script>
+<script src="login.js"></script>
+<script>
+    const BG_IMAGES = [
+        '../images/famers/108174.jpg',
+        '../images/famers/Malawi-Bill-Burke.jpg',
+        '../images/famers/RS25698_Godfrey-Kirimi-displays-tomoatoes-from-his-farm-in-Tharaka-Nithi.-Photo-credit-Farm-Africa-Bertha-Lutome_lpr.jpg',
+        '../images/famers/female-african-farmer-using-her-phone-photo.jpg',
+        '../images/famers/istockphoto-2158596330-612x612.jpg',
+        '../images/famers/vendor-selling-carrots.webp'
+    ];
+    const INTERVAL_MS = 6000;
+    const backgrounds = Array.from(document.querySelectorAll('.hero-bg'));
+    backgrounds.forEach((el, i) => { el.style.backgroundImage = `url('${BG_IMAGES[i]}')`; });
+    let currentIndex = 0;
+    backgrounds[0].classList.add('active');
+    setInterval(() => {
+        backgrounds[currentIndex].classList.remove('active');
+        currentIndex = (currentIndex + 1) % backgrounds.length;
+        backgrounds[currentIndex].classList.add('active');
+    }, INTERVAL_MS);
+</script>
+</body>
+</html>

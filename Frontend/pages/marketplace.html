@@ -1,0 +1,155 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>isokoLink — Marketplace</title>
+  <link rel="icon" type="image/png" href="../images/logo/icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+</head>
+<body data-page="marketplace">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <div class="brand-mark"><img src="../images/logo/icon.png" alt="isokoLink"></div>
+        <div>
+          <h2>isokoLink</h2>
+          <p>Marketplace</p>
+        </div>
+      </div>
+      <nav class="sidebar__menu">
+        <a class="menu-link" data-page="marketplace" href="marketplace.html"><span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>Marketplace</a>
+        <a class="menu-link" data-page="map" href="map.html"><span class="icon"><i class="fa-solid fa-map"></i></span>Map View</a>
+        <a class="menu-link" data-page="requests" href="requests.html"><span class="icon"><i class="fa-solid fa-inbox"></i></span>My Requests</a>
+        <a class="menu-link" data-page="messages" href="messages.html"><span class="icon"><i class="fa-solid fa-message"></i></span>Messages</a>
+      </nav>
+    </aside>
+
+    <main class="main--content">
+      <header class="header">
+        <div class="header--wrapper">
+          <button class="icon-btn" id="sidebarToggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+          <div class="header-actions">
+            <button class="icon-btn" title="Notifications"><i class="fa-regular fa-bell"></i></button>
+            <div class="avatar" id="user-avatar">--</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-shell">
+        <div>
+          <h1 class="page-title">Marketplace</h1>
+          <p class="page-subtitle">Browse fresh produce from local farmers. Filter by location, price, or product type.</p>
+        </div>
+
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="search">Search</label>
+            <input type="text" id="search" placeholder="e.g. Tomatoes or John..." />
+          </div>
+          <div class="filter-group">
+            <label for="filter-crop">Product Type</label>
+            <select id="filter-crop">
+              <option value="">All Products</option>
+              <option>Maize</option>
+              <option>Beans</option>
+              <option>Tomatoes</option>
+              <option>Bananas (Matooke)</option>
+              <option>Sweet Potatoes</option>
+              <option>Groundnuts</option>
+              <option>Coffee (Robusta)</option>
+              <option>Coffee (Arabica)</option>
+              <option>Cassava</option>
+              <option>Sorghum</option>
+              <option>Onions</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-region">Location</label>
+            <select id="filter-region">
+              <option value="">All Locations</option>
+              <option>Central</option>
+              <option>Western</option>
+              <option>Northern</option>
+              <option>Eastern</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filter-price">Max Price (UGX/kg)</label>
+            <input type="number" id="filter-price" placeholder="e.g. 3000" min="0" />
+          </div>
+          <div class="filter-group">
+            <label for="filter-sort">Sort By</label>
+            <select id="filter-sort">
+              <option value="">Default</option>
+              <option value="price_asc">Price: Low → High</option>
+              <option value="price_desc">Price: High → Low</option>
+              <option value="harvest_soon">Harvest: Soonest</option>
+              <option value="quantity_desc">Most Available</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>&nbsp;</label>
+            <div class="flex gap-10">
+              <button class="btn btn-outline" id="reset-btn">Reset</button>
+            </div>
+          </div>
+        </div>
+
+        <p id="results-info" class="card-detail"></p>
+
+        <div class="card--wrapper" id="cards-grid">
+          <div class="loading">Loading fresh produce...</div>
+        </div>
+
+        <div id="details-modal" class="modal-overlay">
+          <div class="modal-box">
+            <div class="modal-header">
+              <strong id="detail-title"></strong>
+              <button class="modal-close" onclick="closeDetails()">×</button>
+            </div>
+            <div class="modal-body" id="detail-body"></div>
+            <div class="modal-footer">
+              <button id="detail-request-btn" class="btn btn-primary btn-full buyer-only">Request to Buy</button>
+              <button id="detail-save-btn" class="btn btn-outline">Save Item</button>
+              <button onclick="closeDetails()" class="btn btn-outline">Close</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="request-modal" class="modal-overlay">
+          <div class="modal-box">
+            <div class="modal-header">
+              <strong>Send Purchase Request</strong>
+              <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+              <p id="modal-subtitle" class="card-detail"></p>
+              <div class="form-group">
+                <label for="req-quantity">How many kg do you need?</label>
+                <input type="number" id="req-quantity" placeholder="e.g. 100" min="1" />
+              </div>
+              <div class="form-group">
+                <label for="req-message">Message to farmer (optional)</label>
+                <textarea id="req-message" rows="3" placeholder="e.g. Can you deliver to Kampala? We need weekly supply."></textarea>
+              </div>
+              <p id="req-error" class="card-detail error-text"></p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-primary btn-full buyer-only" onclick="submitRequest()">Send Request</button>
+              <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/config.js"></script>
+  <script src="../js/logout.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="../js/marketplace.js"></script>
+</body>
+</html>

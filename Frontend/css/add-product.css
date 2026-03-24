@@ -1,0 +1,152 @@
+/* ================================================================
+   add-product.css
+   Styles for the Add Product form page.
+   Builds on layout.css + components.css — no overrides, only additions.
+   ================================================================ */
+
+/* ── Generic card (used as .card on the form wrapper) ─────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+/* ── Form card container ──────────────────────────────────────── */
+.form-card {
+  padding: 30px 26px;
+  max-width: 860px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Green accent strip across the top of the card */
+.form-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--green), #43a047 70%);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+
+/* ── Label-span-input pattern used in this form ──────────────── */
+/*   <label><span>Field Name</span><input /></label>              */
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.form-grid label > span {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-mid);
+  letter-spacing: 0.1px;
+}
+
+/* ── Input types not covered by components.css ───────────────── */
+/*   components.css covers: text, number, email, textarea, select */
+/*   These were missing: bare inputs (no type), tel, date        */
+
+input:not([type]),
+input[type="tel"],
+input[type="date"] {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Manrope', 'Segoe UI', sans-serif;
+  font-size: 14px;
+  background: #fff;
+  color: var(--text-dark);
+  width: 100%;
+  transition: border-color 0.15s ease, outline 0.1s ease;
+}
+
+input:not([type]):focus,
+input[type="tel"]:focus,
+input[type="date"]:focus {
+  outline: 2px solid var(--green-soft);
+  border-color: var(--green);
+}
+
+/* Make all inputs in the form full-width */
+.form-grid input,
+.form-grid textarea,
+.form-grid select {
+  width: 100%;
+}
+
+/* ── Page intro area above the card ──────────────────────────── */
+.add-product-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Status & feedback messages ──────────────────────────────── */
+#add-product-status {
+  font-weight: 700;
+  font-size: 13px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  min-height: 0;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+/* Hide when empty */
+#add-product-status:empty {
+  display: none;
+}
+
+/* Success state — add via JS: el.className = "success" */
+#add-product-status.success {
+  background: var(--green-soft);
+  color: var(--green-2);
+  border: 1px solid #c3dfc6;
+}
+
+/* Error state — add via JS: el.className = "error" */
+#add-product-status.error {
+  background: #ffe8e8;
+  color: #a32121;
+  border: 1px solid #f5c0c0;
+}
+
+/* Location / helper text */
+#location-status {
+  color: var(--text-light);
+  font-size: 0.83rem;
+  margin: 0;
+}
+
+/* ── Submit row ───────────────────────────────────────────────── */
+.form-grid .submit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ── Responsive ───────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .form-card {
+    padding: 22px 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-card {
+    padding: 18px 14px;
+  }
+
+  .form-grid .full-span .flex {
+    flex-direction: column;
+  }
+
+  .form-grid .full-span .flex .btn {
+    width: 100%;
+  }
+}

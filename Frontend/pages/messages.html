@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>isokoLink — Messages</title>
+  <link rel="icon" type="image/png" href="../images/logo/icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+</head>
+<body data-page="messages">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <div class="brand-mark"><img src="../images/logo/icon.png" alt="isokoLink"></div>
+        <div>
+          <h2>isokoLink</h2>
+          <p>Messages</p>
+        </div>
+      </div>
+      <nav class="sidebar__menu">
+        <a class="menu-link" data-page="marketplace" href="marketplace.html"><span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>Marketplace</a>
+        <a class="menu-link" data-page="map" href="map.html"><span class="icon"><i class="fa-solid fa-map"></i></span>Map View</a>
+        <a class="menu-link" data-page="requests" href="requests.html"><span class="icon"><i class="fa-solid fa-inbox"></i></span>My Requests</a>
+        <a class="menu-link" data-page="messages" href="messages.html"><span class="icon"><i class="fa-solid fa-message"></i></span>Messages</a>
+      </nav>
+    </aside>
+
+    <main class="main--content">
+      <header class="header">
+        <div class="header--wrapper">
+          <button class="icon-btn" id="sidebarToggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+          </div>
+          <div class="header-actions">
+            <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
+            <div class="avatar" id="user-avatar">--</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-shell">
+        <div>
+          <h1 class="page-title">Messages</h1>
+          <p class="page-subtitle">Chat directly with farmers. Ask questions, agree on delivery, and confirm orders.</p>
+        </div>
+
+        <div class="messages-layout">
+          <div class="convo-list">
+            <div class="convo-list-header">Conversations</div>
+            <div id="convo-list-items">
+              <div class="loading">Loading...</div>
+            </div>
+          </div>
+
+          <div class="chat-window">
+            <div class="chat-header">
+              <div class="convo-avatar" id="chat-avatar">?</div>
+              <div>
+                <div class="chat-header-name" id="chat-name">Select a conversation</div>
+                <div class="chat-header-crop" id="chat-crop">Choose a farmer from the left panel</div>
+              </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+              <div class="card-detail">Select a conversation to start chatting</div>
+            </div>
+
+            <div class="chat-input-bar">
+              <input type="text" id="chat-input" placeholder='e.g. "Can you deliver tomorrow?"' onkeydown="handleEnter(event)" />
+              <button class="btn btn-primary btn-sm" onclick="sendMessage()">Send</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/config.js"></script>
+  <script src="../js/logout.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script src="../js/messages.js"></script>
+</body>
+</html>

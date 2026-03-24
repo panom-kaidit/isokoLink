@@ -1,0 +1,187 @@
+* {
+    box-sizing: border-box; /* Fixes inputs overflowing — padding no longer adds to width */
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0d1f10;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* ── CAROUSEL BACKGROUNDS ─────────────────────── */
+.hero-bg {
+    position: fixed;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.3s ease-in-out;
+    z-index: 0;
+}
+
+.hero-bg.active {
+    opacity: 1;
+}
+
+.hero-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    z-index: 1;
+}
+
+/* ── PAGE WRAPPER ─────────────────────────────── */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem 1rem;
+    position: relative;
+    z-index: 2;
+}
+
+/* ── CARD ────────────────────────────────────── */
+.card {
+    background: white;
+    padding: 2rem 2.25rem;
+    width: 100%;
+    max-width: 440px;
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.10);
+}
+
+/* ── BRAND LOGO ──────────────────────────────── */
+.brand-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 8px;
+}
+
+/* ── HEADINGS ────────────────────────────────── */
+.card h2 {
+    color: #1B5E20;
+    font-size: 1.6rem;
+    margin-bottom: 0.3rem;
+}
+
+.card > p {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ── FORM GROUPS ─────────────────────────────── */
+.form-group {
+    display: flex;
+    flex-direction: column;    /* Label sits above the input */
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;        /* Gap between label and field */
+}
+
+/* ── INPUTS & SELECT ─────────────────────────── */
+input,
+select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 7px;
+    background: #fff;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus,
+select:focus {
+    border-color: #1B5E20;     /* Green highlight on focus */
+}
+
+input::placeholder {
+    color: #aaa;
+}
+
+/* Select arrow fix */
+select {
+    appearance: auto;          /* Keep native dropdown arrow visible */
+    cursor: pointer;
+}
+
+/* ── CONDITIONAL FIELD (school/institution) ──── */
+.hidden {
+    display: none;
+}
+
+/* ── ERROR TEXT ──────────────────────────────── */
+.error {
+    color: #c0392b;
+    font-size: 0.85rem;
+    margin-bottom: 0.75rem;
+    min-height: 1.1rem;        /* Stops layout jumping when error appears */
+}
+
+/* ── SUBMIT BUTTON ───────────────────────────── */
+button[type="submit"] {
+    width: 100%;
+    padding: 12px;
+    background: #1B5E20;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    transition: background 0.2s, transform 0.15s;
+}
+
+button[type="submit"]:hover {
+    background: #145216;
+    transform: translateY(-1px);
+}
+
+/* ── FOOTER LINK ─────────────────────────────── */
+.card > p:last-child {
+    margin-top: 1.25rem;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    color: #555;
+    text-align: center;
+}
+
+.card > p:last-child a {
+    color: #1B5E20;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.card > p:last-child a:hover {
+    text-decoration: underline;
+}
+
+/* ── MOBILE ──────────────────────────────────── */
+@media (max-width: 480px) {
+    .card {
+        padding: 1.5rem 1.25rem;
+    }
+
+    .card h2 {
+        font-size: 1.35rem;
+    }
+}

@@ -1,0 +1,127 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0d1f10;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── CAROUSEL BACKGROUNDS ─────────────────── */
+.hero-bg {
+    position: fixed;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.3s ease-in-out;
+    z-index: 0;
+}
+
+.hero-bg.active {
+    opacity: 1;
+}
+
+.hero-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    z-index: 1;
+}
+
+.container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.card {
+    background: white;
+    padding: 30px;
+    width: 350px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+h1 {
+    color: #1B5E20;
+}
+
+.brand-logo {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 8px;
+}
+
+.subtitle {
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+input {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    border: 1.5px solid #d0d0d0;
+    border-radius: 7px;
+    background: #fff;
+    color: #222;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus {
+    border-color: #1B5E20;
+}
+
+input::placeholder {
+    color: #aaa;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background: #1B5E20;
+    color: white;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: inherit;
+    border: none;
+    border-radius: 7px;
+    cursor: pointer;
+    margin-top: 0.25rem;
+    transition: background 0.2s, transform 0.15s;
+}
+
+button:hover {
+    background: #145216;
+    transform: translateY(-1px);
+}
+
+.error {
+    color: red;
+    font-size: 13px;
+}
+
+.link {
+    margin-top: 15px;
+}

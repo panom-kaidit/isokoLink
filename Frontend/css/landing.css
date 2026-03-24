@@ -1,0 +1,202 @@
+/* ═══════════════════════════════════════════
+   FONTS & RESET
+═══════════════════════════════════════════ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', Arial, sans-serif;
+    background: #0d1f10;
+    color: white;
+}
+
+/* ═══════════════════════════════════════════
+   LAYOUT WRAPPER
+═══════════════════════════════════════════ */
+.landing-container {
+    position: relative;       /* Anchors the absolute background divs */
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;          /* Clips images to the viewport */
+}
+
+/* ═══════════════════════════════════════════
+   BACKGROUND CAROUSEL IMAGES
+   Each .hero-bg is invisible (opacity:0) by default.
+   Adding .active fades it in over 1.3 seconds.
+═══════════════════════════════════════════ */
+.hero-bg {
+    position: absolute;
+    inset: 0;                           /* Stretch to fill the whole container */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0;
+    transition: opacity 1.3s ease-in-out; /* ← The fade magic */
+    z-index: 0;
+}
+
+.hero-bg.active {
+    opacity: 1;
+}
+
+/* Dark overlay on top of every image so white text is always readable */
+.hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.52);
+    z-index: 1;
+}
+
+/* ═══════════════════════════════════════════
+   HERO CONTENT
+   Sits on top of both images and the overlay
+═══════════════════════════════════════════ */
+.hero {
+    position: relative;
+    z-index: 2;               /* Above images (z:0) and overlay (z:1) */
+    text-align: center;
+    padding: 0 1.5rem;
+    max-width: 780px;
+}
+
+/* Logo */
+.hero img {
+    width: 160px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 2px 8px rgba(0,0,0,0.5));
+}
+
+/* Main headline */
+.hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    line-height: 1.2;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.55);
+    letter-spacing: -0.5px;
+}
+
+/* Rotating subtitle */
+.hero-subtitle {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    opacity: 0.92;
+    margin-bottom: 2.2rem;
+    max-width: 640px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.45);
+    transition: opacity 0.5s ease-in-out; /* Smooth text swap */
+}
+
+/* Faded-out state — JS adds this class before swapping text */
+.hero-subtitle.fading {
+    opacity: 0;
+}
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 2.5rem;
+}
+
+.buttons a {
+    text-decoration: none;
+}
+
+/* Solid white button */
+.buttons button {
+    padding: 13px 32px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Inter', Arial, sans-serif;
+    background: white;
+    color: #1B5E20;
+    letter-spacing: 0.2px;
+    transition: transform 0.25s, box-shadow 0.25s;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.buttons button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Ghost / outline button */
+.buttons button.outline {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    color: white;
+    box-shadow: none;
+}
+
+.buttons button.outline:hover {
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════
+   CAROUSEL DOT INDICATORS
+═══════════════════════════════════════════ */
+.carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.35);
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    transition: background 0.3s, transform 0.3s;
+    padding: 0;
+}
+
+.dot.active {
+    background: #ffffff;
+    transform: scale(1.3);
+}
+
+.dot:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — mobile phones
+═══════════════════════════════════════════ */
+@media (max-width: 600px) {
+    .hero h1 {
+        font-size: 2rem;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .buttons button {
+        width: 200px;
+    }
+}

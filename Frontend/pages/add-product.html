@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Add Product — isokoLink</title>
+  <link rel="icon" type="image/png" href="../images/logo/icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SzlrxWriC3p1OG6G4cJ6t2V6pHj7WvC18rVhZf3z5l5qq7N0KCVd1K7YLucK13Yp7G2F8hGZ82P6lY4GdIrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="../css/layout.css" />
+  <link rel="stylesheet" href="../css/components.css" />
+  <link rel="stylesheet" href="../css/dashboard.css" />
+  <link rel="stylesheet" href="../css/add-product.css" />
+</head>
+<body data-page="products">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <div class="brand-mark"><img src="../images/logo/icon.png" alt="isokoLink"></div>
+        <div>
+          <h2>isokoLink</h2>
+          <p>Add Product</p>
+        </div>
+      </div>
+      <nav class="sidebar__menu">
+        <a class="menu-link" data-page="marketplace" href="marketplace.html"><span class="icon"><i class="fa-solid fa-cart-shopping"></i></span>Marketplace</a>
+        <a class="menu-link" data-page="map" href="map.html"><span class="icon"><i class="fa-solid fa-map"></i></span>Map View</a>
+        <a class="menu-link" data-page="requests" href="requests.html"><span class="icon"><i class="fa-solid fa-inbox"></i></span>Requests</a>
+        <a class="menu-link" data-page="messages" href="messages.html"><span class="icon"><i class="fa-solid fa-message"></i></span>Messages</a>
+        <a class="menu-link" data-page="products" href="products.html"><span class="icon"><i class="fa-solid fa-seedling"></i></span>My Products</a>
+      </nav>
+    </aside>
+
+    <main class="main--content">
+      <header class="header">
+        <div class="header--wrapper">
+          <button class="icon-btn" id="sidebarToggle" aria-label="Toggle menu"><i class="fa-solid fa-bars"></i></button>
+          <div class="header-actions">
+            <button class="icon-btn"><i class="fa-regular fa-bell"></i></button>
+            <div class="avatar" id="user-avatar">--</div>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-shell">
+        <div>
+          <h1 class="page-title">Add Product</h1>
+          <p class="page-subtitle">Publish a new listing so buyers can request it.</p>
+        </div>
+        <div class="card form-card">
+          <form id="add-product-form" class="form-grid">
+            <label>
+              <span>Crop</span>
+              <input id="crop" required />
+            </label>
+            <label>
+              <span>Price per kg (UGX)</span>
+              <input id="price" type="number" min="0" required />
+            </label>
+            <label>
+              <span>Quantity (kg)</span>
+              <input id="quantity" type="number" min="1" required />
+            </label>
+            <label>
+              <span>District</span>
+              <input id="district" required />
+            </label>
+            <label>
+              <span>Region</span>
+              <input id="region" required />
+            </label>
+            <label>
+              <span>Harvest Date</span>
+              <input id="harvestDate" type="date" />
+            </label>
+            <label class="full-span">
+              <span>Description</span>
+              <textarea id="description" rows="3" placeholder="Optional notes"></textarea>
+            </label>
+            <label class="full-span">
+              <span>Phone</span>
+              <input id="phone" placeholder="+256..." />
+            </label>
+            <p id="location-status" class="card-detail full-span" style="font-size:0.85rem;margin-bottom:4px;"></p>
+            <p id="add-product-status" class="card-detail"></p>
+            <div class="full-span flex gap-10">
+              <button class="btn btn-primary" type="submit">Add Product</button>
+              <a class="btn btn-outline" href="products.html">Back to Products</a>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="../js/config.js"></script>
+  <script src="../js/layout.js"></script>
+  <script src="../js/add-product.js"></script>
+</body>
+</html>

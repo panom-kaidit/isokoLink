@@ -1,0 +1,5 @@
+﻿/* map.css - minor map page tweaks */
+.map-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px; border-bottom: 1px solid var(--border); background: #f7faf8; }
+.map-filters input, .map-filters select { width: 100%; }
+#leaflet-map { min-height: 520px; }
+@media (max-width: 900px) { .map-filters { grid-template-columns: 1fr; } }
