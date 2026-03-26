@@ -17,6 +17,27 @@ const reqAuthHeaders = { Authorization: `Bearer ${requestsToken}` };
 let requestsData = [];
 let viewMode = "cards";
 
+// Listen for live request updates so status changes appear without a refresh
+const socket = io(window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : window.location.origin);
+
+socket.on("connect", () => {
+  const id = String(requestsUser?.id || requestsUser?._id || "");
+  if (id) socket.emit("register", id);
+});
+
+socket.on("request:update", (payload) => {
+  // Refetch to keep the UI consistent (filters, sorting, etc.)
+  fetchRequests();
+  if (payload?.action === "created" && role === "farmer") {
+    showToast("New request received");
+  }
+  if (payload?.action === "status" && role === "buyer") {
+    showToast(`Request updated to ${payload.data?.status || "Updated"}`);
+  }
+});
+
 // Clean any text before putting it on the page so it cannot break the layout
 const safeText = (value) =>
   String(value ?? "")

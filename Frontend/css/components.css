@@ -128,7 +128,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--green-soft)
 .convo-list-item:hover, .convo-list-item.active { background: var(--green-soft); }
 .convo-name { font-weight: 800; }
 .convo-meta { color: var(--text-mid); font-size: 12px; }
-.convo-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.12s ease; }
+.convo-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; display: grid; gap: 4px; transition: background 0.12s ease; }
 .convo-item:hover, .convo-item.active { background: var(--green-soft); }
 .convo-title { font-weight: 800; }
 .convo-preview { color: var(--text-mid); font-size: 12px; }
@@ -143,6 +143,10 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--green-soft)
 .msg-out .msg-time { color: rgba(255,255,255,0.8); }
 .chat-bubble { max-width: 70%; padding: 10px 12px; border-radius: 12px; background: #f4f7f5; }
 .chat-bubble.me { margin-left: auto; background: var(--green); color: #fff; }
+.chat-bubble.chat-pending { opacity: 0.85; }
+.chat-bubble.chat-failed { background: #ffecec; color: #8a1f1f; border: 1px dashed #d9534f; }
+.chat-time { font-size: 11px; color: rgba(0,0,0,0.6); margin-top: 4px; }
+.chat-bubble.me .chat-time { color: rgba(255,255,255,0.8); }
 .message-list { display: flex; flex-direction: column; gap: 8px; padding: 12px; min-height: 220px; }
 .message { padding: 10px 12px; border-radius: 12px; background: #f4f7f5; }
 .message.me { margin-left: auto; background: var(--green); color: #fff; }

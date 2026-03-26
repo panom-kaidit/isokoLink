@@ -1,8 +1,7 @@
 const Request = require("../models/Request");
 const Listing = require("../models/Listing");
 
-// Called when a buyer wants to buy from a farmer's listing.
-// Looks up the listing first to make sure it still exists, then saves the request.
+// Create a new purchase request (buyers/schools/institutions)
 exports.createRequest = async (req, res) => {
   try {
     const { listingId, quantity, message = "" } = req.body;
@@ -26,13 +25,26 @@ exports.createRequest = async (req, res) => {
       status: "Pending"
     });
 
+    await request.populate([
+      { path: "buyer", select: "name" },
+      { path: "farmer", select: "name" },
+      { path: "listingId", select: "crop pricePerUnit quantity district region farmerName phone" }
+    ]);
+
+    const notify = req.app.get("notifyUser");
+    const payload = { action: "created", data: request.toObject() };
+    if (typeof notify === "function") {
+      notify(request.farmer, "request:update", payload);
+      notify(request.buyer,  "request:update", payload);
+    }
+
     res.status(201).json({ success: true, message: "Request created", data: request });
   } catch (err) {
     res.status(500).json({ success: false, message: "Could not create request" });
   }
 };
 
-// Farmers see requests sent to them. Buyers see the requests they have sent.
+// Get requests for the logged-in user
 exports.getRequests = async (req, res) => {
   try {
     let filter = {};
@@ -53,7 +65,7 @@ exports.getRequests = async (req, res) => {
   }
 };
 
-// Lets a farmer accept or decline a request that was sent to them
+// Update request status (farmer only)
 exports.updateRequestStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -74,6 +86,13 @@ exports.updateRequestStatus = async (req, res) => {
       { path: "farmer", select: "name" },
       { path: "listingId", select: "crop pricePerUnit quantity district region farmerName phone" }
     ]);
+
+    const notify = req.app.get("notifyUser");
+    const payload = { action: "status", data: request.toObject() };
+    if (typeof notify === "function") {
+      notify(request.buyer,  "request:update", payload);
+      notify(request.farmer, "request:update", payload);
+    }
 
     res.json({ success: true, message: "Status updated", data: request });
   } catch (err) {

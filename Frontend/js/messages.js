@@ -1,82 +1,59 @@
-// This file runs the messages page.
-// It loads past conversations from the server and lets users chat in real time using Socket.io.
-// All variables are declared at the top so the socket listeners below can use them safely.
+// Messaging page script
+// Loads history, sends messages through the API (persist first), and listens for live updates via Socket.io.
 
-// Check the user is logged in before anything else runs
+// ── Auth guard ────────────────────────────────────────────────────────────────
 const messagesToken = getToken ? getToken() : localStorage.getItem("token");
-if (!messagesToken) {
-  window.location.href = "../login/login.html";
-}
+if (!messagesToken) window.location.href = "../login/login.html";
+
 const messagesUser = window.currentUser || (getUserFromToken ? getUserFromToken() : null);
 if (!messagesUser) {
   localStorage.removeItem("token");
   window.location.href = "../login/login.html";
 }
-const userId      = String(messagesUser?.id || messagesUser?._id || "");
-const userRole    = messagesUser?.role || "buyer";
+
+const userId   = String(messagesUser?.id || messagesUser?._id || "");
+const userRole = messagesUser?.role || "buyer";
 const msgAuthHeaders = { Authorization: `Bearer ${messagesToken}` };
 
-// Keep track of all loaded conversations and which one is open right now
+// ── State ─────────────────────────────────────────────────────────────────────
 let conversations = [];
 let activeConvo   = null;
 
-// Clean text before putting it on the page so special characters display correctly
+// ── Helpers ───────────────────────────────────────────────────────────────────
 const safeText = (value) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;");
 
+const formatTime = (value) =>
+  new Date(value || Date.now()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
 function scrollChatToBottom() {
   const chat = document.getElementById("chat-messages");
   if (chat) chat.scrollTop = chat.scrollHeight;
 }
 
-// Connect to the live messaging server so new messages arrive without refreshing the page.
-// We connect after the variables above are ready so nothing is undefined when messages arrive.
+function sortConversationsByRecent() {
+  conversations.sort((a, b) => {
+    const aTime = a.messages?.length ? a.messages[a.messages.length - 1].at : 0;
+    const bTime = b.messages?.length ? b.messages[b.messages.length - 1].at : 0;
+    return bTime - aTime;
+  });
+}
+
+// ── Socket.io setup ───────────────────────────────────────────────────────────
 const socket = io(window.location.hostname === "localhost"
   ? "http://localhost:5000"
   : window.location.origin);
 
-// Tell the server which user this browser tab belongs to so it can deliver messages to us
 socket.on("connect", () => {
   socket.emit("register", userId);
 });
 
-socket.on("receiveMessage", (msg) => {
-  const { senderId, text, time } = msg;
+socket.on("message:new", (payload) => ingestMessage(payload, { source: "socket" }));
 
-  // Look for an existing conversation with this person, or create a new one
-  let convo = conversations.find((c) => c.partnerId === senderId);
-  if (!convo) {
-    convo = {
-      id:        senderId,
-      name:      "New contact",
-      avatar:    "NC",
-      partnerId: senderId,
-      crop:      "",
-      messages:  []
-    };
-    conversations.push(convo);
-  }
-
-  convo.messages.push({
-    from: "them",
-    text,
-    time: new Date(time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  });
-
-  if (activeConvo && activeConvo.partnerId === senderId) {
-    // The user is already looking at this conversation, so update it live
-    selectConversation(convo.id);
-    scrollChatToBottom();
-  } else {
-    // The message is for a different conversation, just refresh the list on the left
-    renderConvoList();
-  }
-});
-
-// A sample conversation shown when the server cannot be reached
+// ── Fallback sample shown if the API fails ────────────────────────────────────
 const sampleFallback = [
   {
     id: "demo-farmer-1",
@@ -84,12 +61,11 @@ const sampleFallback = [
     crop: "Maize",
     avatar: "GR",
     partnerId: "demo-farmer-1",
-    messages: [{ from: "them", text: "Hello, I have 800 kg of maize ready.", time: "09:10" }]
+    messages: [{ from: "them", text: "Hello, I have 800 kg of maize ready.", time: "09:10", at: Date.now() }]
   }
 ];
 
-// The script is placed at the bottom of the HTML so the page is ready when this runs.
-// We can call loadMessages() straight away without waiting for DOMContentLoaded.
+// ── Initial load ──────────────────────────────────────────────────────────────
 loadMessages();
 
 async function loadMessages() {
@@ -125,9 +101,12 @@ async function loadMessages() {
       }
 
       map.get(partnerId).messages.push({
-        from: isMine ? "me" : "them",
-        text: m.text || m.message || "",
-        at:   new Date(m.createdAt || Date.now()).getTime()
+        id:    m._id || m.id,
+        tempId: m.clientTempId || null,
+        from:  isMine ? "me" : "them",
+        text:  m.text || m.message || "",
+        at:    new Date(m.createdAt || Date.now()).getTime(),
+        status: isMine ? (m.deliveredAt ? "delivered" : "sent") : null
       });
     });
 
@@ -137,17 +116,16 @@ async function loadMessages() {
         .sort((a, b) => a.at - b.at)
         .map((m) => ({
           ...m,
-          time: new Date(m.at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+          time: formatTime(m.at)
         }))
     }));
+    sortConversationsByRecent();
   } catch (err) {
     console.warn("Using fallback messages:", err.message);
     conversations = sampleFallback;
   }
 
-  // If the user came from the marketplace by clicking "Message Farmer",
-  // that page saved the farmer's info in sessionStorage. We pick it up here
-  // and open that conversation straight away.
+  // If the user clicked \"Message Farmer\" elsewhere, open that conversation immediately.
   const pending = sessionStorage.getItem("pendingConvo");
   if (pending) {
     sessionStorage.removeItem("pendingConvo");
@@ -164,7 +142,7 @@ async function loadMessages() {
             partnerId,
             messages:  []
           };
-          conversations.unshift(convo); // put at top of list
+          conversations.unshift(convo);
         }
         activeConvo = convo;
       }
@@ -183,7 +161,7 @@ async function loadMessages() {
   }
 }
 
-// Draw the list of conversations in the left panel
+// ── Rendering helpers ─────────────────────────────────────────────────────────
 function renderConvoList() {
   const list = document.getElementById("convo-list-items");
   if (!list) return;
@@ -221,7 +199,6 @@ function renderConvoList() {
   });
 }
 
-// Open a conversation and show its messages in the right panel
 function selectConversation(id) {
   activeConvo = conversations.find((c) => c.id === id);
   if (!activeConvo) return;
@@ -243,6 +220,8 @@ function selectConversation(id) {
     activeConvo.messages.forEach((msg) => {
       const row = document.createElement("div");
       row.className = `chat-bubble ${msg.from === "me" ? "me" : "them"}`;
+      if (msg.status === "failed") row.classList.add("chat-failed");
+      if (msg.status === "sending") row.classList.add("chat-pending");
 
       const textEl = document.createElement("div");
       textEl.className = "chat-text";
@@ -250,7 +229,8 @@ function selectConversation(id) {
 
       const timeEl = document.createElement("div");
       timeEl.className = "chat-time";
-      timeEl.textContent = msg.time;
+      const statusLabel = formatStatus(msg.status);
+      timeEl.textContent = statusLabel ? `${msg.time} · ${statusLabel}` : msg.time;
 
       row.appendChild(textEl);
       row.appendChild(timeEl);
@@ -262,38 +242,125 @@ function selectConversation(id) {
   renderConvoList();
 }
 
-// Send the message the user typed when they click Send or press Enter
+// ── Message ingestion (socket + API responses) ───────────────────────────────
+function ensureConversation(partnerId, displayName = "Conversation", crop = "") {
+  let convo = conversations.find((c) => c.partnerId === partnerId);
+  if (!convo) {
+    const avatar = (displayName || "?").slice(0, 2).toUpperCase();
+    convo = { id: partnerId, partnerId, name: displayName, crop, avatar, messages: [] };
+    conversations.unshift(convo);
+  }
+  return convo;
+}
+
+function formatStatus(status) {
+  if (!status) return "";
+  if (status === "sending") return "sending…";
+  if (status === "sent") return "sent";
+  if (status === "delivered") return "delivered";
+  if (status === "failed") return "failed to send";
+  return status;
+}
+
+function ingestMessage(payload, { source = "socket" } = {}) {
+  if (!payload) return;
+
+  const senderId   = String(payload.senderId || payload.sender || "");
+  const receiverId = String(payload.receiverId || payload.receiver || "");
+  const partnerId  = senderId === userId ? receiverId : senderId;
+  if (!partnerId) return;
+
+  const isMine = senderId === userId;
+  const nameFromPayload = isMine ? payload.receiverName : payload.senderName;
+  const convo = ensureConversation(partnerId, nameFromPayload || "Conversation", payload.crop || "");
+
+  const when = payload.createdAt ? new Date(payload.createdAt) : new Date();
+  const baseStatus = isMine
+    ? payload.deliveredAt
+      ? "delivered"
+      : "sent"
+    : null;
+
+  const existing = convo.messages.find((m) =>
+    (payload._id && m.id === payload._id) ||
+    (payload.tempId && m.tempId && m.tempId === payload.tempId)
+  );
+
+  if (existing) {
+    existing.id     = existing.id || payload._id || payload.id;
+    existing.tempId = existing.tempId || payload.tempId || null;
+    existing.status = baseStatus || existing.status;
+    existing.text   = existing.text || payload.text || "";
+    existing.at     = when.getTime();
+    existing.time   = formatTime(when);
+  } else {
+    convo.messages.push({
+      id: payload._id || payload.id || payload.tempId || `msg-${Date.now()}`,
+      tempId: payload.tempId || null,
+      from: isMine ? "me" : "them",
+      text: payload.text || "",
+      at: when.getTime(),
+      time: formatTime(when),
+      status: baseStatus
+    });
+  }
+
+  convo.messages.sort((a, b) => a.at - b.at);
+  sortConversationsByRecent();
+
+  if (activeConvo && activeConvo.partnerId === partnerId) {
+    selectConversation(convo.id);
+    scrollChatToBottom();
+  } else {
+    renderConvoList();
+  }
+}
+
+// ── Send flow ────────────────────────────────────────────────────────────────
 async function sendMessage() {
   const input = document.getElementById("chat-input");
   const text  = input.value.trim();
   if (!text || !activeConvo) return;
 
-  // Show the message on screen right away so it feels instant
-  const now = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  activeConvo.messages.push({ from: "me", text, time: now });
-  input.value = "";
-  selectConversation(activeConvo.id); // re-render + scroll
-
   const receiverId = activeConvo.partnerId || activeConvo.id;
+  const tempId = `tmp-${Date.now()}`;
+  const now = new Date();
+
+  // Add a pending bubble instantly
+  const pendingMsg = {
+    id: tempId,
+    tempId,
+    from: "me",
+    text,
+    at: now.getTime(),
+    time: formatTime(now),
+    status: "sending"
+  };
+  activeConvo.messages.push(pendingMsg);
+  sortConversationsByRecent();
+  input.value = "";
+  selectConversation(activeConvo.id);
 
   try {
     const res = await fetch(`${API_BASE}/messages`, {
       method:  "POST",
       headers: { "Content-Type": "application/json", ...msgAuthHeaders },
-      body:    JSON.stringify({ receiverId, text })
+      body:    JSON.stringify({ receiverId, text, tempId })
     });
 
+    const payload = await res.json();
     if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.message || "send failed");
+      throw new Error(payload.message || "Could not send message");
     }
 
-    // Only send via the live socket after we know the server saved the message
-    socket.emit("sendMessage", { senderId: userId, receiverId, text });
-
+    // The server emits after saving. We also ingest the API response to clear the pending state quickly.
+    ingestMessage(payload.data || payload, { source: "api" });
   } catch (err) {
+    const current = activeConvo.messages.find((m) => m.tempId === tempId);
+    if (current) current.status = "failed";
+    selectConversation(activeConvo.id);
     console.warn("Message not saved to API:", err.message);
-    showToast("Message shown locally but could not be saved to server.");
+    showToast("Message could not be saved. Check your connection and try again.");
   }
 }
 

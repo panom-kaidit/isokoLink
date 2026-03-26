@@ -1,34 +1,34 @@
-﻿const express  = require("express");
-const dotenv   = require("dotenv");
-const cors     = require("cors");
-const helmet   = require("helmet");
+const express   = require("express");
+const dotenv    = require("dotenv");
+const cors      = require("cors");
+const helmet    = require("helmet");
 const rateLimit = require("express-rate-limit");
-const path     = require("path");                  // ← NEW: needed for static files
-const connectDB = require("./config/db");
+const path      = require("path");
+const http      = require("http");
+const { Server } = require("socket.io");
 
-dotenv.config({ path: '../.env' });
+const connectDB = require("./config/db");
+const Message   = require("./models/Message");
+
+dotenv.config({ path: "../.env" });
 connectDB();
 
 const app = express();
 
-// Helmet adds security headers to every response.
-// We turn off its strict content policy so our CDN links (Font Awesome, Leaflet) still work.
+// ── Security headers ──────────────────────────────────────────────────────────
+// helmet CSP is relaxed so CDN assets (Font Awesome, Leaflet, Socket.io CDN) keep working.
 app.use(
   helmet({
-    contentSecurityPolicy: false,
-    crossOriginOpenerPolicy: false,
-    originAgentCluster: false
+    contentSecurityPolicy: false
   })
 );
 
-// CORS tells the browser which other websites are allowed to call our API.
-// In production the frontend and backend run on the same server, so we just mirror the origin.
-// In development we allow the local Live Server ports we use on our computer.
+// ── CORS ──────────────────────────────────────────────────────────────────────
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production"
-      ? true                                        // same-origin in Docker — mirror origin
-      : [                                           // dev origins
+      ? true
+      : [
           "http://localhost:3000",
           "http://127.0.0.1:5501",
           "http://localhost:5501"
@@ -39,7 +39,7 @@ app.use(
 
 app.use(express.json());
 
-// Limit how many login attempts someone can make in 15 minutes to slow down brute-force attacks
+// ── Rate limiting ─────────────────────────────────────────────────────────────
 app.use(
   "/api/auth/login",
   rateLimit({
@@ -48,32 +48,25 @@ app.use(
   })
 );
 
-// Register all the API routes. These come before the static file serving
-// so a request to /api/... never accidentally gets treated as a file request.
+// ── API routes ────────────────────────────────────────────────────────────────
 app.use("/api/auth",     require("./routes/authRoutes"));
 app.use("/api/listings", require("./routes/listingRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 
-// Serve all the HTML, CSS, JS, and image files from the Frontend folder.
-// When running in Docker, __dirname points to /app/Backend so ../Frontend resolves correctly.
+// ── Serve the Frontend static files ──────────────────────────────────────────
 app.use(express.static(path.join(__dirname, "../Frontend")));
 
-// If someone visits a URL that is not an API route, send them index.html.
-// This lets direct links like /login/login.html or /pages/marketplace.html work in the browser.
+// ── Catch-all: send index.html for any non-API route ─────────────────────────
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../Frontend", "index.html"));
 });
 
-// Wrap the Express app in a plain HTTP server so Socket.io can share the same port
-const http = require("http");
-const { Server } = require("socket.io");
-
+// ── HTTP + Socket.io server ───────────────────────────────────────────────────
 const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    // Same allowed-origins rule as the one above for the HTTP server
     origin: process.env.NODE_ENV === "production"
       ? true
       : ["http://127.0.0.1:5501", "http://localhost:5501"],
@@ -81,38 +74,136 @@ const io = new Server(server, {
   }
 });
 
-// Keep a simple map of which user is connected on which socket so we can deliver messages directly
-const users = {};   // { userId: socketId }
+// ── Socket.io: real-time messaging helpers ────────────────────────────────────
+const connectedUsers = new Map(); // userId -> Set(socketId)
+const userRoom = (id) => `user:${id}`;
+
+function addUserSocket(userId, socketId) {
+  const key = String(userId);
+  if (!connectedUsers.has(key)) connectedUsers.set(key, new Set());
+  connectedUsers.get(key).add(socketId);
+}
+
+function removeUserSocket(userId, socketId) {
+  const set = connectedUsers.get(String(userId));
+  if (!set) return;
+  set.delete(socketId);
+  if (!set.size) connectedUsers.delete(String(userId));
+}
+
+const messagePopulate = [
+  { path: "sender", select: "name" },
+  { path: "receiver", select: "name" }
+];
+
+const formatPayload = (doc, tempId) => ({
+  _id:         doc._id,
+  senderId:    String(doc.sender?._id || doc.sender),
+  senderName:  doc.sender?.name || "",
+  receiverId:  String(doc.receiver?._id || doc.receiver),
+  receiverName: doc.receiver?.name || "",
+  text:        doc.text,
+  createdAt:   doc.createdAt,
+  deliveredAt: doc.deliveredAt,
+  tempId:      tempId || doc.clientTempId || null
+});
+
+async function emitMessage(doc, { tempId, notifySender = true, notifyReceiver = true } = {}) {
+  const payload = formatPayload(doc, tempId);
+  const senderRoom = userRoom(payload.senderId);
+  const receiverRoom = userRoom(payload.receiverId);
+
+  if (notifySender) {
+    io.to(senderRoom).emit("message:new", { ...payload, direction: "out" });
+  }
+
+  const receiverOnline = connectedUsers.get(payload.receiverId)?.size > 0;
+  if (notifyReceiver && receiverOnline) {
+    if (!doc.deliveredAt) {
+      doc.deliveredAt = new Date();
+      await doc.save();
+      payload.deliveredAt = doc.deliveredAt;
+    }
+    io.to(receiverRoom).emit("message:new", payload);
+  }
+
+  return payload;
+}
+
+async function createAndEmitMessage({ senderId, receiverId, text, tempId }) {
+  const cleanText = String(text || "").trim();
+  if (!senderId || !receiverId || !cleanText) return null;
+
+  const message = await Message.create({
+    sender: senderId,
+    receiver: receiverId,
+    text: cleanText,
+    clientTempId: tempId || null
+  });
+
+  await message.populate(messagePopulate);
+  const payload = await emitMessage(message, { tempId });
+  return payload;
+}
+
+async function deliverPendingMessages(userId) {
+  const pending = await Message.find({ receiver: userId, deliveredAt: null })
+    .sort({ createdAt: 1 })
+    .populate(messagePopulate);
+
+  for (const msg of pending) {
+    await emitMessage(msg, { notifySender: false, tempId: msg.clientTempId });
+  }
+}
+
+// Expose helpers to controllers via req.app.get(...)
+app.set("io", io);
+app.set("connectedUsers", connectedUsers);
+app.set("userRoom", userRoom);
+app.set("emitMessage", emitMessage);
+app.set("createAndEmitMessage", createAndEmitMessage);
+app.set("notifyUser", (userId, event, payload) => {
+  if (!userId || !event) return;
+  io.to(userRoom(String(userId))).emit(event, payload);
+});
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("register", (userId) => {
-    users[userId] = socket.id;
+  socket.on("register", async (userId) => {
+    const id = String(userId || "");
+    if (!id) return;
+
+    socket.data.userId = id;
+    addUserSocket(id, socket.id);
+    socket.join(userRoom(id));
+
+    try {
+      await deliverPendingMessages(id);
+    } catch (err) {
+      console.error("deliverPendingMessages failed", err.message);
+    }
   });
 
-  socket.on("sendMessage", ({ senderId, receiverId, text }) => {
-    const receiverSocket = users[receiverId];
-    if (receiverSocket) {
-      io.to(receiverSocket).emit("receiveMessage", {
-        senderId,
-        text,
-        time: new Date()
-      });
+  // Optional: support direct socket sends; still persist first, then broadcast
+  socket.on("sendMessage", async ({ receiverId, text, tempId }) => {
+    const senderId = String(socket.data.userId || "");
+    if (!senderId) return;
+    try {
+      await createAndEmitMessage({ senderId, receiverId, text, tempId });
+    } catch (err) {
+      console.error("socket sendMessage failed", err.message);
     }
   });
 
   socket.on("disconnect", () => {
-    for (const id in users) {
-      if (users[id] === socket.id) {
-        delete users[id];
-      }
-    }
+    const id = socket.data.userId;
+    if (id) removeUserSocket(id, socket.id);
     console.log("User disconnected:", socket.id);
   });
 });
 
-// Start the server and print the port so we know it is running
+// ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);
