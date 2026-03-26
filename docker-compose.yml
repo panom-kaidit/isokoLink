@@ -4,8 +4,7 @@ services:
   app:
     build: .
     container_name: isokolink
-    restart: always          # auto-restart if the container crashes or server reboots
-    ports:
-      - "5000:5000"          # host:container — Nginx will forward :80 to :5000
+    restart: always
+    network_mode: host        # uses the server's network directly 
     env_file:
-      - .env                 # reads the .env file at the project root
+      - .env                  # reads the .env file at the project root
