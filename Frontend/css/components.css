@@ -128,7 +128,7 @@ input:focus, textarea:focus, select:focus { outline: 2px solid var(--green-soft)
 .convo-list-item:hover, .convo-list-item.active { background: var(--green-soft); }
 .convo-name { font-weight: 800; }
 .convo-meta { color: var(--text-mid); font-size: 12px; }
-.convo-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; display: grid; gap: 4px; transition: background 0.12s ease; }
+.convo-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; align-items: center; gap: 10px; transition: background 0.12s ease; }
 .convo-item:hover, .convo-item.active { background: var(--green-soft); }
 .convo-title { font-weight: 800; }
 .convo-preview { color: var(--text-mid); font-size: 12px; }
