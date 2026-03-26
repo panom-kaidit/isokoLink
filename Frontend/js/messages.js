@@ -1,7 +1,7 @@
 // Messaging page script
 // Loads history, sends messages through the API (persist first), and listens for live updates via Socket.io.
 
-// ── Auth guard ────────────────────────────────────────────────────────────────
+// Make sure only signed-in users can use messaging
 const messagesToken = getToken ? getToken() : localStorage.getItem("token");
 if (!messagesToken) window.location.href = "../login/login.html";
 
@@ -15,11 +15,11 @@ const userId   = String(messagesUser?.id || messagesUser?._id || "");
 const userRole = messagesUser?.role || "buyer";
 const msgAuthHeaders = { Authorization: `Bearer ${messagesToken}` };
 
-// ── State ─────────────────────────────────────────────────────────────────────
+// Local in-memory state
 let conversations = [];
 let activeConvo   = null;
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// Helper functions
 const safeText = (value) =>
   String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -42,7 +42,7 @@ function sortConversationsByRecent() {
   });
 }
 
-// ── Socket.io setup ───────────────────────────────────────────────────────────
+// Socket.io connection for live chat
 const socket = io(window.location.hostname === "localhost"
   ? "http://localhost:5000"
   : window.location.origin);
@@ -53,7 +53,7 @@ socket.on("connect", () => {
 
 socket.on("message:new", (payload) => ingestMessage(payload, { source: "socket" }));
 
-// ── Fallback sample shown if the API fails ────────────────────────────────────
+// Demo messages to show if the API is unavailable
 const sampleFallback = [
   {
     id: "demo-farmer-1",
@@ -65,7 +65,7 @@ const sampleFallback = [
   }
 ];
 
-// ── Initial load ──────────────────────────────────────────────────────────────
+// Load existing messages right away
 loadMessages();
 
 async function loadMessages() {
@@ -161,7 +161,7 @@ async function loadMessages() {
   }
 }
 
-// ── Rendering helpers ─────────────────────────────────────────────────────────
+// UI rendering helpers
 function renderConvoList() {
   const list = document.getElementById("convo-list-items");
   if (!list) return;
@@ -242,7 +242,7 @@ function selectConversation(id) {
   renderConvoList();
 }
 
-// ── Message ingestion (socket + API responses) ───────────────────────────────
+// Add new messages from sockets or API responses
 function ensureConversation(partnerId, displayName = "Conversation", crop = "") {
   let convo = conversations.find((c) => c.partnerId === partnerId);
   if (!convo) {
@@ -316,7 +316,7 @@ function ingestMessage(payload, { source = "socket" } = {}) {
   }
 }
 
-// ── Send flow ────────────────────────────────────────────────────────────────
+// Flow for sending a message
 async function sendMessage() {
   const input = document.getElementById("chat-input");
   const text  = input.value.trim();

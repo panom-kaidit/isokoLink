@@ -15,15 +15,15 @@ connectDB();
 
 const app = express();
 
-// ── Security headers ──────────────────────────────────────────────────────────
-// helmet CSP is relaxed so CDN assets (Font Awesome, Leaflet, Socket.io CDN) keep working.
+// Security middleware
+// CSP is relaxed so CDN assets still load
 app.use(
   helmet({
     contentSecurityPolicy: false
   })
 );
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
+// CORS settings
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production"
@@ -39,7 +39,7 @@ app.use(
 
 app.use(express.json());
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Rate limiting for login endpoint
 app.use(
   "/api/auth/login",
   rateLimit({
@@ -48,21 +48,21 @@ app.use(
   })
 );
 
-// ── API routes ────────────────────────────────────────────────────────────────
+// API routes
 app.use("/api/auth",     require("./routes/authRoutes"));
 app.use("/api/listings", require("./routes/listingRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 
-// ── Serve the Frontend static files ──────────────────────────────────────────
+// Serve the frontend static assets
 app.use(express.static(path.join(__dirname, "../Frontend")));
 
-// ── Catch-all: send index.html for any non-API route ─────────────────────────
+// For any unknown route, send index.html
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../Frontend", "index.html"));
 });
 
-// ── HTTP + Socket.io server ───────────────────────────────────────────────────
+// HTTP server with Socket.io
 const server = http.createServer(app);
 
 const io = new Server(server, {
@@ -74,7 +74,7 @@ const io = new Server(server, {
   }
 });
 
-// ── Socket.io: real-time messaging helpers ────────────────────────────────────
+// Helpers for mapping users to sockets and delivering messages
 const connectedUsers = new Map(); // userId -> Set(socketId)
 const userRoom = (id) => `user:${id}`;
 
