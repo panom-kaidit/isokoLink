@@ -205,7 +205,7 @@ function renderList(items, container, map) {
     // Green for farmers, orange for buyers so they are easy to tell apart
     const accentColor  = isBuyer ? "#e67e22" : "#2e7d32";
     const badgeColor   = isBuyer ? "#fff3e0" : "#e8f5e9";
-    const badgeText    = isBuyer ? "🛒 Buyer Request" : "🌱 Farmer Listing";
+    const badgeText    = isBuyer ? "🛒 Buyer Request" : "🌱 Farmer Listing"; // the imojies are named seedling and shoping card when you pres windows + (.)
 
     // Build the card element for the left panel list
     const card = document.createElement("div");
