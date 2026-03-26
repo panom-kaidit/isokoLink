@@ -2,12 +2,13 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// Create a signed token with user id and role
+// Build a JWT token that contains the user's id, role, and name.
+// The token expires after 7 days so the user does not have to log in constantly.
 const generateToken = (user) => {
   return jwt.sign({ id: user._id, role: user.role, name: user.name }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
-// SIGNUP
+// Handle new account creation. Hashes the password before saving so it is never stored as plain text.
 exports.signup = async (req, res) => {
   try {
     const { name, location, phone, email, role, extraInfo, password } = req.body;
@@ -32,7 +33,7 @@ exports.signup = async (req, res) => {
   }
 };
 
-// LOGIN
+// Handle login. Checks that the email exists and the password matches, then returns a token.
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;

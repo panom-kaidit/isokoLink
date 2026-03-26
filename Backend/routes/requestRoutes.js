@@ -4,7 +4,7 @@ const { createRequest, getRequests, updateRequestStatus } = require("../controll
 const auth = require("../middleware/authMiddleware");
 const allowRoles = require("../middleware/roleMiddleware");
 
-// Everyone must be authenticated
+// All three routes below require the user to be logged in
 router.use(auth);
 
 router.post("/", allowRoles("buyer", "school", "institution"), createRequest);

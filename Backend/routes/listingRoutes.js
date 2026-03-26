@@ -5,10 +5,8 @@ const User       = require("../models/User");
 const auth       = require("../middleware/authMiddleware");
 const allowRoles = require("../middleware/roleMiddleware");
 
-// ── Nominatim geocoder (server-side) ─────────────────────────────────────────
-// Resolves a place name to lat/lng using the OpenStreetMap Nominatim API.
-// No country restriction — works across all of East Africa and beyond.
-// Results are cached in memory for the lifetime of the process.
+// Convert a place name (like a district) into GPS coordinates using OpenStreetMap.
+// We remember the results in memory so we do not call the API twice for the same name.
 const _coordCache = {};
 
 async function getCoordinates(place) {
@@ -20,7 +18,7 @@ async function getCoordinates(place) {
   const url   = `https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`;
 
   try {
-    // Node 18+ has native fetch. For older Node use node-fetch.
+    // Node 18 and above has fetch built in. If you are on an older version, install node-fetch.
     const res  = await fetch(url, { headers: { "User-Agent": "isokoLink-App" } });
     const data = await res.json();
     if (!data || !data.length) return null;
@@ -34,8 +32,8 @@ async function getCoordinates(place) {
   }
 }
 
-// ── Helper: fill in missing coordinates for a listing ────────────────────────
-// Priority: stored coords → geocode district → geocode region → null
+// Try to get coordinates for a listing. Uses stored coords first, then tries
+// the district name, then the region name, and gives up if nothing works.
 async function resolveCoords(listing) {
   if (listing.lat && listing.lng) {
     return { lat: listing.lat, lng: listing.lng };
@@ -47,7 +45,7 @@ async function resolveCoords(listing) {
   return coords || { lat: null, lng: null };
 }
 
-// ── Demo seed ─────────────────────────────────────────────────────────────────
+// If the database is empty, add one sample listing so the map and marketplace are not blank
 async function ensureDemoListing() {
   const count = await Listing.countDocuments();
   if (count > 0) return;
@@ -71,7 +69,7 @@ async function ensureDemoListing() {
   });
 }
 
-// ── GET all listings ──────────────────────────────────────────────────────────
+// Return all listings, with optional filtering by crop, region, or search text
 router.get("/", async (req, res) => {
   try {
     await ensureDemoListing();
@@ -96,7 +94,7 @@ router.get("/", async (req, res) => {
 
     const listings = await query.exec();
 
-    // Resolve coordinates for every listing in parallel
+    // Fill in GPS coordinates for every listing at the same time to keep things fast
     const normalized = await Promise.all(
       listings.map(async (l) => {
         const coords = await resolveCoords(l);
@@ -117,7 +115,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// ── GET single listing ────────────────────────────────────────────────────────
+// Return one listing by its ID
 router.get("/:id", async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id).populate("farmer", "name phone");
@@ -136,7 +134,7 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ── POST create listing (farmer only) ─────────────────────────────────────────
+// Create a new listing. Only farmers are allowed to do this.
 router.post("/", auth, allowRoles("farmer"), async (req, res) => {
   try {
     const {
@@ -145,8 +143,8 @@ router.post("/", auth, allowRoles("farmer"), async (req, res) => {
       lat, lng
     } = req.body;
 
-    // If the client already resolved coordinates, use them directly.
-    // Otherwise geocode the district (or region as fallback) server-side.
+    // If the browser already sent coordinates, use them.
+    // Otherwise convert the district name to coordinates here on the server.
     let finalLat = lat  || null;
     let finalLng = lng  || null;
 

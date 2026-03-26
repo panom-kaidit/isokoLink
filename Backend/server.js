@@ -11,22 +11,17 @@ connectDB();
 
 const app = express();
 
-// ── Security headers ──────────────────────────────────────────────────────────
-// In production, helmet's default contentSecurityPolicy blocks inline scripts
-// and external CDNs (Font Awesome, Leaflet, Socket.io CDN).
-// We relax it here so the frontend loads correctly.
+// Helmet adds security headers to every response.
+// We turn off its strict content policy so our CDN links (Font Awesome, Leaflet) still work.
 app.use(
   helmet({
     contentSecurityPolicy: false
   })
 );
 
-// ── CORS ──────────────────────────────────────────────────────────────────────
-// Development: allow the live-server origins you were using.
-// Production (Docker): the frontend is served by THIS server on the same origin,
-// so browser requests are same-origin and CORS headers are not needed.
-// Using `origin: true` tells cors to mirror whatever origin the request came from,
-// which handles both cases cleanly.
+// CORS tells the browser which other websites are allowed to call our API.
+// In production the frontend and backend run on the same server, so we just mirror the origin.
+// In development we allow the local Live Server ports we use on our computer.
 app.use(
   cors({
     origin: process.env.NODE_ENV === "production"
@@ -42,7 +37,7 @@ app.use(
 
 app.use(express.json());
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Limit how many login attempts someone can make in 15 minutes to slow down brute-force attacks
 app.use(
   "/api/auth/login",
   rateLimit({
@@ -51,29 +46,24 @@ app.use(
   })
 );
 
-// ── API routes ────────────────────────────────────────────────────────────────
-// These MUST come before the static-file middleware so /api/* is never
-// accidentally served as a file.
+// Register all the API routes. These come before the static file serving
+// so a request to /api/... never accidentally gets treated as a file request.
 app.use("/api/auth",     require("./routes/authRoutes"));
 app.use("/api/listings", require("./routes/listingRoutes"));
 app.use("/api/requests", require("./routes/requestRoutes"));
 app.use("/api/messages", require("./routes/messageRoutes"));
 
-// ── Serve the Frontend static files ──────────────────────────────────────────
-// In Docker the project root is /app, so:
-//   __dirname  = /app/Backend
-//   ../Frontend = /app/Frontend
-// express.static serves everything inside Frontend/ — HTML, CSS, JS, images.
+// Serve all the HTML, CSS, JS, and image files from the Frontend folder.
+// When running in Docker, __dirname points to /app/Backend so ../Frontend resolves correctly.
 app.use(express.static(path.join(__dirname, "../Frontend")));
 
-// ── Catch-all: send index.html for any non-API route ─────────────────────────
-// This lets users navigate directly to /login/login.html, /pages/marketplace.html
-// etc. — the browser gets the file and the frontend JS takes over routing.
+// If someone visits a URL that is not an API route, send them index.html.
+// This lets direct links like /login/login.html or /pages/marketplace.html work in the browser.
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "../Frontend", "index.html"));
 });
 
-// ── HTTP + Socket.io server ───────────────────────────────────────────────────
+// Wrap the Express app in a plain HTTP server so Socket.io can share the same port
 const http = require("http");
 const { Server } = require("socket.io");
 
@@ -81,7 +71,7 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    // Same logic as the express cors config above
+    // Same allowed-origins rule as the one above for the HTTP server
     origin: process.env.NODE_ENV === "production"
       ? true
       : ["http://127.0.0.1:5501", "http://localhost:5501"],
@@ -89,7 +79,7 @@ const io = new Server(server, {
   }
 });
 
-// ── Socket.io: real-time messaging ───────────────────────────────────────────
+// Keep a simple map of which user is connected on which socket so we can deliver messages directly
 const users = {};   // { userId: socketId }
 
 io.on("connection", (socket) => {
@@ -120,7 +110,7 @@ io.on("connection", (socket) => {
   });
 });
 
-// ── Start ─────────────────────────────────────────────────────────────────────
+// Start the server and print the port so we know it is running
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT} in ${process.env.NODE_ENV || "development"} mode`);

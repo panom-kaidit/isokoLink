@@ -1,6 +1,6 @@
 const Message = require("../models/Message");
 
-// Send a message between users
+// Save a new message from the logged-in user to another user
 exports.sendMessage = async (req, res) => {
   try {
     const { receiverId, text } = req.body;
@@ -15,7 +15,7 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Get all messages for the logged-in user
+// Fetch every message the logged-in user has sent or received, sorted oldest first
 exports.getMessages = async (req, res) => {
   try {
     const userId = req.user.id;

@@ -16,9 +16,8 @@ const listingSchema = new mongoose.Schema(
     phone:       String,
     description: String,
     harvestDate: Date,
-    // ── Location coordinates ───────────────────────────────────────────────
-    // Captured from the farmer's browser GPS when they add the product,
-    // or resolved server-side from the district name as a fallback.
+    // GPS coordinates for placing the listing on the map.
+    // Comes from the farmer's browser if they allowed location, otherwise we look it up from the district name.
     lat: { type: Number, default: null },
     lng: { type: Number, default: null }
   },

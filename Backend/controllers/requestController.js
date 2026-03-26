@@ -1,7 +1,8 @@
 const Request = require("../models/Request");
 const Listing = require("../models/Listing");
 
-// Create a new purchase request (buyers/schools/institutions)
+// Called when a buyer wants to buy from a farmer's listing.
+// Looks up the listing first to make sure it still exists, then saves the request.
 exports.createRequest = async (req, res) => {
   try {
     const { listingId, quantity, message = "" } = req.body;
@@ -31,7 +32,7 @@ exports.createRequest = async (req, res) => {
   }
 };
 
-// Get requests for the logged-in user
+// Farmers see requests sent to them. Buyers see the requests they have sent.
 exports.getRequests = async (req, res) => {
   try {
     let filter = {};
@@ -52,7 +53,7 @@ exports.getRequests = async (req, res) => {
   }
 };
 
-// Update request status (farmer only)
+// Lets a farmer accept or decline a request that was sent to them
 exports.updateRequestStatus = async (req, res) => {
   try {
     const { status } = req.body;

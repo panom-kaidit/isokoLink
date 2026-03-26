@@ -1,4 +1,5 @@
-// authMiddleware.js - checks JWT and attaches user info
+// This runs before any protected route. It reads the login token from the request,
+// checks it is valid, then attaches the user's info so the route can use it.
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 
