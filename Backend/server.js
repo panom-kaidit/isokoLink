@@ -15,7 +15,9 @@ const app = express();
 // We turn off its strict content policy so our CDN links (Font Awesome, Leaflet) still work.
 app.use(
   helmet({
-    contentSecurityPolicy: false
+    contentSecurityPolicy: false,
+    crossOriginOpenerPolicy: false,
+    originAgentCluster: false
   })
 );
 
