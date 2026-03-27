@@ -107,13 +107,59 @@ window.currentRole = layoutRole;
 })();
 
 // On small screens, tapping the hamburger button opens or closes the sidebar
-const toggleBtn = document.getElementById("sidebarToggle");
-const sidebar = document.querySelector(".sidebar");
-if (toggleBtn && sidebar) {
-  toggleBtn.addEventListener("click", () => {
-    sidebar.classList.toggle("open");
+(function setupSidebarToggle() {
+  const toggleBtn = document.getElementById("sidebarToggle");
+  const sidebar = document.querySelector(".sidebar");
+  if (!toggleBtn || !sidebar) return;
+
+  // Create an overlay once and reuse it on every page
+  let overlay = document.getElementById("sidebarOverlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "sidebarOverlay";
+    overlay.className = "sidebar-overlay";
+    document.body.appendChild(overlay);
+  }
+
+  const isMobile = () => window.matchMedia("(max-width: 1024px)").matches;
+
+  const closeSidebar = () => {
+    document.body.classList.remove("sidebar-open");
+    overlay.classList.remove("active");
+    toggleBtn.setAttribute("aria-expanded", "false");
+  };
+
+  const toggleSidebar = () => {
+    if (!isMobile()) return;
+    const isOpen = document.body.classList.toggle("sidebar-open");
+    overlay.classList.toggle("active", isOpen);
+    toggleBtn.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  };
+
+  if (!sidebar.id) {
+    sidebar.id = "sidebar";
+  }
+  toggleBtn.setAttribute("aria-controls", "sidebar");
+  toggleBtn.setAttribute("aria-expanded", "false");
+
+  toggleBtn.addEventListener("click", toggleSidebar);
+  overlay.addEventListener("click", closeSidebar);
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeSidebar();
   });
-}
+  window.addEventListener("resize", () => {
+    if (!isMobile()) {
+      closeSidebar();
+    }
+  });
+
+  // Close the drawer after navigating on small screens
+  sidebar.querySelectorAll("a").forEach((link) => {
+    link.addEventListener("click", () => {
+      if (isMobile()) closeSidebar();
+    });
+  });
+})();
 
 // Show a small popup message at the bottom of the screen for a few seconds
 window.showToast = function (message) {

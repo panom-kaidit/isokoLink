@@ -14,7 +14,7 @@
 
 <div class="landing-container">
 
-    <!-- Background images for the carousel (swap these for your own paths such as url('./images/farm1.jpg')) -->
+    <!-- Background layers for the hero slideshow -->
     <div class="hero-bg" id="bg-0"></div>
     <div class="hero-bg" id="bg-1"></div>
     <div class="hero-bg" id="bg-2"></div>
@@ -22,20 +22,18 @@
     <div class="hero-bg" id="bg-4"></div>
     <div class="hero-bg" id="bg-5"></div>
 
-    <!-- Dark overlay so text stays readable over any photo -->
+    <!-- Soft overlay keeps the text readable on any photo -->
     <div class="hero-overlay"></div>
 
-    <!-- Main content sits above the images and overlay -->
+    <!-- Main content sits above images and overlay -->
     <div class="hero">
 
         <img src="./images/logo/icon.png" alt="isokoLink Logo">
 
         <h1>Welcome</h1>
-
-        <!-- Subtitle rotates with each background image -->
+        <!-- Subtitle rotates with the slideshow; blanks intentionally leave space -->
         <p class="hero-subtitle" id="hero-subtitle">
-            IsokoLink connects farmers directly to buyers — eliminating middlemen, ensuring fair prices,
-            and making fresh food more accessible for everyone. Discover, trade, and grow together in one simple platform.
+            Farmers meet buyers directly. Fair, fast, local.
         </p>
 
         <div class="buttons">
@@ -56,20 +54,17 @@
 
 <script>
 
-    // Subtitle text for each background image
-
+    // Short subtitles for each slide; every other spot stays blank on purpose
     const SUBTITLES = [
-        // Slide 1 - clean and professional
-        "IsokoLink connects farmers directly to buyers — eliminating middlemen, ensuring fair prices, and making fresh food more accessible for everyone. Discover, trade, and grow together in one simple platform.",
-        // Slide 2 - marketing angle
-        "Buy fresh. Sell smarter. Grow faster. IsokoLink empowers farmers to reach real buyers instantly while giving schools, restaurants, and businesses access to affordable, high-quality produce — all in one seamless marketplace.",
-        // Slide 3 - impact focused
-        "Transforming agriculture through connection. IsokoLink bridges the gap between farmers and buyers, reducing food waste, increasing transparency, and strengthening local economies — one transaction at a time.",
-    // Start the slideshow
-        "No middlemen. No guesswork. Just real connections. IsokoLink is your digital marketplace for buying and selling fresh produce — faster, fairer, and smarter."
+        "Farmers meet buyers directly. Fair, fast, local.", // slide 1
+        "",                                                 // slide 2
+        "Fresh produce with clear prices and real people.", // slide 3
+        "",                                                 // slide 4
+        "Grow sales without middlemen slowing you down.",   // slide 5
+        ""                                                  // slide 6
     ];
 
-    // Background image URLs (replace with your own paths)
+    // Background image URLs used in the slideshow
 
     const BG_IMAGES = [
         './images/famers/108174.jpg',
@@ -80,22 +75,22 @@
         './images/famers/vendor-selling-carrots.webp'
     ];
 
-    const INTERVAL_MS = 6000; // milliseconds per slide
-    // Apply the background images to the slide elements
+    const INTERVAL_MS = 6000; // time each slide stays on screen (ms)
+    // Apply the backgrounds to the layered divs
     const backgrounds = Array.from(document.querySelectorAll('.hero-bg'));
     backgrounds.forEach((el, i) => {
         el.style.backgroundImage = `url('${BG_IMAGES[i]}')`;
     });
 
     const subtitleEl = document.getElementById('hero-subtitle');
-    const dotsWrap   = document.getElementById('carousel-dots');
+    const dotsWrap = document.getElementById('carousel-dots');
 
     let currentIndex = 0;
     let timer;
-    // Build the small navigation dots
+    // Build the navigation dots
     backgrounds.forEach((_, i) => {
         const dot = document.createElement('button');
-        dot.className   = 'dot' + (i === 0 ? ' active' : '');
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
         dot.setAttribute('aria-label', `Slide ${i + 1}`);
         dot.addEventListener('click', () => goTo(i));
         dotsWrap.appendChild(dot);
@@ -138,3 +133,4 @@
 
 </body>
 </html>
+
