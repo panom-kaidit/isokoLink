@@ -56,6 +56,9 @@ This handles the real-time messaging. When a buyer sends a message, the farmer s
 it instantly without needing to refresh the page.  
 Docs: https://socket.io/docs/v4/
 
+**Diagram presentation**
+![alt text](isokolink_external_apis.svg)
+
 ---
 
 ## Running it locally
@@ -91,6 +94,9 @@ docker compose up -d --build
 ---
 
 ## How I deployed it
+
+**Diagram presentation**
+![alt text](image.png)
 
 The setup has three servers — two web servers (Web01 and Web02) running the actual 
 app, and a load balancer (Lb01) sitting in front of them.
@@ -185,6 +191,14 @@ marketplace at the same time.
 
 ---
 
+## Bonus Features Implemented
+
+- **User Authentication** — JWT-based login with farmer/buyer roles
+- **Docker Containerization** — Full Docker and Docker Compose setup
+- **Real-time Features** — Socket.io messaging
+- **HTTPS/SSL** — Let's Encrypt certificate on load balancer
+
+---
 ## Credits
 
 - OpenStreetMap and Nominatim for geocoding and map tiles — https://www.openstreetmap.org/copyright
