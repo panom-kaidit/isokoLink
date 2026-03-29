@@ -39,8 +39,11 @@ a map view that shows all available listings as pins so you can see what is near
 ---
 
 ## APIs used
+**OpenStreetMap(map)**
+This is an open-source map and community-driven mapping platform. It provides free geographic data that allows users to view locations, find nearby farmers, and interact with listings on a visual map.
+Docs: https://www.openstreetmap.org
 
-**Nominatim (OpenStreetMap)**  
+**Nominatim (Geocoding)**  
 This handles all the geocoding. When a farmer types in their district name, Nominatim 
 converts it to latitude and longitude coordinates. I built an in-memory cache around 
 it to avoid hitting the rate limit (they allow 1 request per second).  
