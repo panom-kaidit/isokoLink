@@ -116,25 +116,27 @@ body {
     text-decoration: none;
 }
 
-/* Solid white button */
+/* Shared base for both hero buttons */
 .buttons button {
+    min-width: 175px;
     padding: 13px 32px;
-    border: none;
+    border: 2px solid rgba(255, 255, 255, 0.85);
     border-radius: 8px;
     cursor: pointer;
     font-size: 1rem;
     font-weight: 600;
     font-family: 'Inter', Arial, sans-serif;
-    background: white;
-    color: #1B5E20;
+    background: transparent;
+    color: #ffffff;
+    text-align: center;
     letter-spacing: 0.2px;
     transition: transform 0.25s, box-shadow 0.25s;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
 .buttons button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 255, 255, 0.12);
+    box-shadow: none;
 }
 
 /* Ghost / outline button */
