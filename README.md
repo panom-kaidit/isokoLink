@@ -16,7 +16,7 @@ so it feels like a conversation rather than sending a form into the void.
 
 The app is live at **https://www.panom-kaidit.tech**
 
-There is also a short demo video here:
+There is also a short demo video here: **https://youtu.be/LTnZXRH-5FE**
 
 ---
 
